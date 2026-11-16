@@ -8,7 +8,7 @@ const arcgisCatalog = read('src/data/arcgisServices.ts');
 const serverSource = read('server.ts');
 const mapViewerSource = read('src/components/MapViewer.tsx');
 const sidebarSource = read('src/components/SidebarLayers.tsx');
-const ids = [...catalog.matchAll(/id:\s*'([^']+)'/g)].map((m) => m[1]);
+const ids = [...catalog.matchAll(/id:\s*['"]([^'"]+)['"]/g)].map((m) => m[1]);
 const issues = [];
 const expectedLayerIds = [
   'admin-provinces',
@@ -24,7 +24,7 @@ for (const id of expectedLayerIds) {
 }
 const bigOverlayIds = ['big-gunung-api', 'big-forest-zones', 'big-mining-licenses', 'big-coal-iup'];
 for (const id of bigOverlayIds) {
-  if (!arcgisCatalog.includes(`id: '${id}'`)) issues.push(`Missing BIG ArcGIS overlay ${id}.`);
+  if (!new RegExp(`id:\\s*['"]${id}['"]`).test(arcgisCatalog)) issues.push(`Missing BIG ArcGIS overlay ${id}.`);
 }
 const obsoleteIds = [
   'satellite-sentinel2', 'satellite-nasa-gibs-terra', 'satellite-nasa-gibs-night',
@@ -34,7 +34,7 @@ const obsoleteIds = [
   'big-atlas-penutup-lahan', 'gfw-fire-history', 'gfw-peat-lands', 'gfw-palm-oil-mills',
 ];
 for (const id of obsoleteIds) {
-  if (ids.includes(id) || arcgisCatalog.includes(`id: '${id}'`)) issues.push(`Obsolete layer remains in new catalogue: ${id}`);
+  if (ids.includes(id) || new RegExp(`id:\\s*['"]${id}['"]`).test(arcgisCatalog)) issues.push(`Obsolete layer remains in new catalogue: ${id}`);
 }
 if (/url:\s*['"]https:\/\/[^'"]*Atlas_250K_BatuBara/i.test(arcgisCatalog)) issues.push('Restricted BIG PTRA coal atlas must not be embedded in the public catalogue.');
 
@@ -81,10 +81,26 @@ function walk(dir) {
 }
 walk(root);
 for (const file of allSourceFiles) {
+  const rel = path.relative(root, file).replace(/\\/g, '/');
+  if (rel === '.env') continue;
   const contents = fs.readFileSync(file, 'utf8');
-  if (/ab489d74c348a57ded166d6d90e37e42/i.test(contents)) issues.push(`Exposed NASA FIRMS key literal in ${path.relative(root, file)}`);
-  if (/localStorage\.(getItem|setItem)\(['"]nasa_firms_key/.test(contents)) issues.push(`NASA FIRMS key still stored in localStorage in ${path.relative(root, file)}`);
-  if (/mapKey=/.test(contents)) issues.push(`Client-supplied mapKey parameter remains in ${path.relative(root, file)}`);
+  if (new RegExp('ab489d74c348a57' + 'ded166d6d90e37e42', 'i').test(contents)) issues.push(`Exposed NASA FIRMS key literal in ${rel}`);
+  if (new RegExp('8563c2789597fca' + '7800cae91e3f39898', 'i').test(contents)) issues.push(`Exposed NASA FIRMS key literal in ${rel}`);
+  if (/NASA_FIRMS_MAP_KEY\s*=\s*["']?[0-9a-f]{32}/i.test(contents)) issues.push(`Hardcoded NASA FIRMS key assignment in ${rel}`);
+  if (/localStorage\.(getItem|setItem)\(['"]nasa_firms_key/.test(contents)) issues.push(`NASA FIRMS key still stored in localStorage in ${rel}`);
+  if (/mapKey=/.test(contents)) issues.push(`Client-supplied mapKey parameter remains in ${rel}`);
+}
+
+const frontendFiles = allSourceFiles.filter((file) => {
+  const rel = path.relative(root, file).replace(/\\/g, '/');
+  return rel.startsWith('src/') || rel === 'index.html';
+});
+for (const file of frontendFiles) {
+  const rel = path.relative(root, file).replace(/\\/g, '/');
+  const contents = fs.readFileSync(file, 'utf8');
+  if (/process\.env\b|import\.meta\.env\b/.test(contents)) issues.push(`Environment variable reference found in frontend file ${rel}`);
+  if (/GEMINI_API_KEY|GFW_API_KEY|x-api-key/i.test(contents)) issues.push(`Server secret reference found in frontend file ${rel}`);
+  if (/['"][0-9a-f]{32}['"]/i.test(contents)) issues.push(`Potential 32-hex API key literal found in frontend file ${rel}`);
 }
 if (/getProvincesGeoJSON|representative provincial boundary box polygon/.test(read('src/data/indonesiaLocations.ts'))) issues.push('Synthetic province polygons remain.');
 if (/2026-03-01/.test(catalog) || /replace\(\/2026-03-01/.test(mapViewerSource)) issues.push('Fixed stale GIBS date remains.');
@@ -104,9 +120,9 @@ if (issues.length) {
   for (const issue of issues) console.error(`- ${issue}`);
   process.exit(1);
 }
-const thematicIds = [...(catalog.split('export const INITIAL_LAYERS:')[1] || '').matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
+const thematicIds = [...(catalog.split('export const INITIAL_LAYERS:')[1] || '').matchAll(/id:\s*['"]([^'"]+)['"]/g)].map((match) => match[1]);
 console.log(`DATA AUDIT PASSED — ${thematicIds.length} active catalogue layers; ${BASEMAPS_COUNT()} basemaps retained separately; 3 independent VIIRS layers; 4 GFW vector proxies + 2 GFW raster datasets; no exposed provider keys; no legacy thematic IDs.`);
 function BASEMAPS_COUNT() {
   const match = read('src/data/layersCatalog.ts').match(/export const BASEMAPS:[\s\S]*?= \[([\s\S]*?)\];/);
-  return match ? (match[1].match(/id:\s*'/g) || []).length : 0;
+  return match ? (match[1].match(/id:\s*['"]/g) || []).length : 0;
 }

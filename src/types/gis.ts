@@ -1,8 +1,4 @@
-export type BasemapId =
-  | 'esri-satellite'
-  | 'osm'
-  | 'carto-dark'
-  | 'opentopomap';
+export type BasemapId = "esri-satellite" | "opentopomap";
 
 export type LayerCategory =
   | "basemap"

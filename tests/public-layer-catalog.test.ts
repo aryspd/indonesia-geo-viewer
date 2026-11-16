@@ -9,9 +9,11 @@ const catalogSource = fs.readFileSync(
 );
 const directCatalogSource =
   catalogSource.split("export const INITIAL_LAYERS:")[1] || "";
-const directIds = [...directCatalogSource.matchAll(/id:\s*'([^']+)'/g)].map(
-  (match) => match[1],
-);
+const directIds = [
+  ...directCatalogSource.matchAll(/id:\s*['"]([^'"]+)['"]/g),
+].map((match) => match[1]);
+import path from "node:path";
+
 const expectedDirectIds = [
   "admin-provinces",
   "disaster-viirs-snpp",
@@ -48,19 +50,19 @@ test("basemaps are retained separately from the replaced thematic catalogue", ()
     catalogSource
       .split("export const BASEMAPS:")[1]
       ?.split("export const INITIAL_LAYERS:")[0] || "";
-  const basemapIds = [...basemapSource.matchAll(/id:\s*'([^']+)'/g)].map(
+  const basemapIds = [...basemapSource.matchAll(/id:\s*['"]([^'"]+)['"]/g)].map(
     (match) => match[1],
   );
-  assert.ok(basemapIds.length >= 4);
-  assert.ok(basemapIds.includes("esri-satellite"));
-  assert.ok(basemapIds.includes("osm"));
+  assert.deepEqual(basemapIds, ["esri-satellite", "opentopomap"]);
+  assert.ok(!basemapIds.includes("osm"));
+  assert.ok(!basemapIds.includes("carto-dark"));
 });
 
 test("every direct thematic layer documents provider, attribution, source and use terms", () => {
   const directBlocks = directCatalogSource.split(/\n  \{/).slice(1);
   for (const id of expectedDirectIds) {
     const block = directBlocks.find((candidate) =>
-      candidate.includes(`id: '${id}'`),
+      new RegExp(`id:\\s*['"]${id}['"]`).test(candidate),
     );
     assert.ok(block, `${id} block must exist`);
     for (const field of [
@@ -113,4 +115,41 @@ test("obsolete thematic IDs and restricted BIG PTRA coal atlas are excluded", ()
     allCatalogSource,
     /url:\s*['\"]https?:\/\/[^'\"]*Atlas_250K_BatuBara/i,
   );
+});
+
+test("frontend source never embeds secret API keys or server environment variables", () => {
+  const srcDirPath = path.resolve(process.cwd(), "src");
+  const walkFiles = (dir: string): string[] => {
+    const out: string[] = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) out.push(...walkFiles(full));
+      else if (/\.(ts|tsx|js|jsx)$/.test(entry.name)) out.push(full);
+    }
+    return out;
+  };
+  for (const filePath of walkFiles(srcDirPath)) {
+    const content = fs.readFileSync(filePath, "utf8");
+    const rel = path.relative(process.cwd(), filePath);
+    assert.doesNotMatch(
+      content,
+      /process\.env\b|import\.meta\.env\b/,
+      `${rel} must not read env vars`,
+    );
+    assert.doesNotMatch(
+      content,
+      new RegExp("GEMINI_API_KEY|GFW_API_KEY|x-api-key|mapKey" + "=", "i"),
+      `${rel} must not reference server API keys`,
+    );
+    assert.doesNotMatch(
+      content,
+      /['"][0-9a-f]{32}['"]/i,
+      `${rel} must not contain 32-char API key literals`,
+    );
+    assert.doesNotMatch(
+      content,
+      /NASA_FIRMS_MAP_KEY\s*[:=]/i,
+      `${rel} must not define NASA_FIRMS_MAP_KEY`,
+    );
+  }
 });
