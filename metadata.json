@@ -1,0 +1,6 @@
+{
+  "name": "INDONESIA GEO VIEWER",
+  "description": "Public Web GIS, Environmental Monitoring & Real-Time Geospatial Platform for Indonesia featuring BMKG earthquakes, live wind particle flows, weather radar, NASA FIRMS hotspots, and satellite layers.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
