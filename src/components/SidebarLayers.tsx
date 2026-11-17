@@ -140,9 +140,20 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
     setBmkgForecastError('');
     setBmkgForecast(null);
     try {
-      const response = await fetch(`/api/weather/bmkg?adm4=${encodeURIComponent(code)}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || data?.message || `BMKG merespons ${response.status}`);
+      let data: any = null;
+      try {
+        const response = await fetch(`/api/weather/bmkg?adm4=${encodeURIComponent(code)}`);
+        if (response.ok && (response.headers.get('content-type') || '').includes('json')) {
+          data = await response.json();
+        }
+      } catch {
+        // Fallback to direct BMKG API
+      }
+      if (!data) {
+        const directRes = await fetch(`https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4=${encodeURIComponent(code)}`);
+        if (!directRes.ok) throw new Error(`BMKG merespons ${directRes.status}`);
+        data = await directRes.json();
+      }
       setBmkgForecast(data);
       if (!Array.isArray(data?.data) || !data.data.length) setBmkgForecastError('Data prakiraan belum tersedia untuk kode ADM4 tersebut.');
     } catch (error) {

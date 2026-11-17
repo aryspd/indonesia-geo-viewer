@@ -237,15 +237,84 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     });
   }, [selectedCoordinates]);
 
-  // 4. Quakes Layer (BMKG & USGS)
+  // 4. Quakes Layer (BMKG & USGS — with direct public API fallback for static GitHub Pages)
   const loadQuakesLayer = useCallback(async () => {
     const map = mapRef.current;
     if (!map || !mapLoaded) return;
 
     try {
-      const res = await fetch('/api/quakes');
-      if (!res.ok) return;
-      const data = await res.json();
+      let data: any = null;
+      try {
+        const res = await fetch('./api/quakes');
+        if (res.ok && (res.headers.get('content-type') || '').includes('json')) {
+          data = await res.json();
+        }
+      } catch {
+        // Proceed to direct public API fallback
+      }
+
+      if (!data || !Array.isArray(data.features)) {
+        const features: any[] = [];
+        try {
+          const bmkgRes = await fetch('https://data.bmkg.go.id/DataMKG/TEWS/gempaterkini.json');
+          if (bmkgRes.ok) {
+            const bmkgJson = await bmkgRes.json();
+            const list = Array.isArray(bmkgJson?.Infogempa?.gempa) ? bmkgJson.Infogempa.gempa : [];
+            for (const q of list) {
+              const coords = String(q.Coordinates || '').split(',').map(Number);
+              if (coords.length === 2 && Number.isFinite(coords[0]) && Number.isFinite(coords[1])) {
+                features.push({
+                  type: 'Feature',
+                  geometry: { type: 'Point', coordinates: [coords[1], coords[0]] },
+                  properties: {
+                    magnitude: parseFloat(q.Magnitude) || 5.0,
+                    depth: q.Kedalaman || '10 km',
+                    area: q.Wilayah || 'Indonesia',
+                    date: q.Tanggal || '',
+                    time: q.Jam || '',
+                    potential: q.Potensi || '',
+                    felt: q.Dirasakan || '',
+                    shakemap: q.Shakemap ? `https://data.bmkg.go.id/DataMKG/TEWS/${q.Shakemap}` : null,
+                    source: 'BMKG TEWS',
+                  },
+                });
+              }
+            }
+          }
+        } catch {
+          // Proceed to USGS fallback
+        }
+
+        try {
+          const usgsRes = await fetch(
+            'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&minlatitude=-12&maxlatitude=7&minlongitude=94&maxlongitude=142&minmagnitude=4.0&limit=40'
+          );
+          if (usgsRes.ok) {
+            const usgsJson = await usgsRes.json();
+            for (const f of usgsJson?.features || []) {
+              const c = f.geometry?.coordinates;
+              if (!Array.isArray(c) || c.length < 2) continue;
+              const dt = new Date(f.properties?.time || Date.now());
+              features.push({
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [Number(c[0]), Number(c[1])] },
+                properties: {
+                  magnitude: Number(f.properties?.mag) || 4.5,
+                  depth: `${Math.round(Number(c[2]) || 10)} km`,
+                  area: f.properties?.place || 'Wilayah Indonesia',
+                  date: dt.toLocaleDateString('id-ID'),
+                  time: dt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                  potential: f.properties?.tsunami ? 'Berpotensi Tsunami' : 'Tidak berpotensi tsunami',
+                  source: 'USGS',
+                },
+              });
+            }
+          }
+        } catch {
+          // Ignore USGS network error if offline
+        }
+        data = { type: 'FeatureCollection', features };
+      }
 
       if (onQuakesLoaded && data.features) {
         const latestMag = data.metadata?.bmkgLatest?.Magnitude
@@ -401,7 +470,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       }
 
       if (!geojson || !geojson.features) {
-        const fallbackRes = await fetch('/indonesia-38-provinces.geojson');
+        const fallbackRes = await fetch('./indonesia-38-provinces.geojson');
         if (fallbackRes.ok) {
           geojson = await fallbackRes.json();
         }
@@ -722,17 +791,31 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       const statusCallback = onFirmsSensorStatusRef.current;
       statusCallback?.(config.sensorCode as FirmsSensorCode, { state: 'loading', count: hotspotCountsRef.current[config.statsKey], message: 'Menghubungi NASA FIRMS…' });
       try {
-        const response = await fetch(`/api/firms/hotspots?sensor=${encodeURIComponent(config.sensorCode)}&days=1&refresh=${forceRefresh ? '1' : '0'}`, {
-          cache: 'no-store',
-          headers: { Accept: 'application/geo+json, application/json' },
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          const detail = payload?.sensorStatus?.[config.sensorCode]?.error;
-          throw new Error([payload?.error || payload?.message || `NASA FIRMS HTTP ${response.status}`, detail].filter(Boolean).join(' — '));
+        let payload: any = null;
+        try {
+          const response = await fetch(`./api/firms/hotspots?sensor=${encodeURIComponent(config.sensorCode)}&days=1&refresh=${forceRefresh ? '1' : '0'}`, {
+            cache: 'no-store',
+            headers: { Accept: 'application/geo+json, application/json' },
+          });
+          if (response.ok && (response.headers.get('content-type') || '').includes('json')) {
+            payload = await response.json();
+          }
+        } catch {
+          // Fallback to static hotspot dataset below
+        }
+
+        if (!payload || payload?.type !== 'FeatureCollection' || !Array.isArray(payload.features)) {
+          const fallbackRes = await fetch('./indonesia-hotspots-viirs.geojson');
+          if (fallbackRes.ok) {
+            const fallbackJson = await fallbackRes.json();
+            const filtered = (fallbackJson.features || []).filter(
+              (f: any) => f?.properties?.sensorCode === config.sensorCode
+            );
+            payload = { type: 'FeatureCollection', features: filtered };
+          }
         }
         if (payload?.type !== 'FeatureCollection' || !Array.isArray(payload.features)) {
-          throw new Error('Respons bukan GeoJSON FeatureCollection. Periksa parser CSV/API backend.');
+          throw new Error('Respons bukan GeoJSON FeatureCollection.');
         }
 
         // Guard MapLibre against malformed or non-point records; only valid
@@ -815,9 +898,83 @@ export const MapViewer: React.FC<MapViewerProps> = ({
 
     try {
       if (layerId === 'weather-air-quality') {
-        const res = await fetch('/api/weather/grid?kind=air');
-        if (!res.ok) throw new Error(`AQMS HTTP ${res.status}`);
-        const data = await res.json();
+        let data: any = null;
+        try {
+          const res = await fetch('./api/weather/grid?kind=air');
+          if (res.ok && (res.headers.get('content-type') || '').includes('json')) {
+            data = await res.json();
+          }
+        } catch {
+          // Fallback to direct public API below
+        }
+        if (!data || !Array.isArray(data.features)) {
+          try {
+            const aqmsRes = await fetch('https://opsroom.sipongidata.my.id/api/aqms');
+            if (aqmsRes.ok) {
+              const rawAqms = await aqmsRes.json();
+              const rows = Array.isArray(rawAqms) ? rawAqms : Array.isArray(rawAqms?.data) ? rawAqms.data : [];
+              const features = rows
+                .map((s: any) => {
+                  const lat = parseFloat(s.lat ?? s.latitude);
+                  const lng = parseFloat(s.lon ?? s.lng ?? s.longitude);
+                  const ispu = parseFloat(s.val ?? s.nilai ?? s.ispu ?? s.pm25 ?? 42);
+                  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+                  const cat = ispu <= 50 ? 'BAIK' : ispu <= 100 ? 'SEDANG' : ispu <= 200 ? 'TIDAK SEHAT' : 'SANGAT TIDAK SEHAT';
+                  return {
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: [lng, lat] },
+                    properties: {
+                      kota: s.kota || s.city || s.nama || 'Stasiun AQMS',
+                      provinsi: s.provinsi || s.province || '',
+                      alamat: s.alamat || '',
+                      ispu: Number.isFinite(ispu) ? ispu : 42,
+                      category: s.cat || s.kategori || cat,
+                      waktu: s.waktu || s.updated_at || new Date().toLocaleString('id-ID'),
+                      dataType: 'aqms',
+                    },
+                  };
+                })
+                .filter(Boolean);
+              if (features.length > 0) data = { type: 'FeatureCollection', features };
+            }
+          } catch {
+            // Proceed to Open-Meteo AQ fallback
+          }
+        }
+        if (!data || !Array.isArray(data.features)) {
+          const cities = [
+            { kota: 'Jakarta', lat: -6.21, lng: 106.85 }, { kota: 'Surabaya', lat: -7.25, lng: 112.75 },
+            { kota: 'Bandung', lat: -6.91, lng: 107.61 }, { kota: 'Medan', lat: 3.59, lng: 98.67 },
+            { kota: 'Semarang', lat: -6.97, lng: 110.42 }, { kota: 'Makassar', lat: -5.14, lng: 119.43 },
+            { kota: 'Palembang', lat: -2.99, lng: 104.76 }, { kota: 'Pekanbaru', lat: 0.51, lng: 101.45 },
+            { kota: 'Pontianak', lat: -0.02, lng: 109.34 }, { kota: 'Balikpapan', lat: -1.24, lng: 116.83 },
+            { kota: 'Denpasar', lat: -8.65, lng: 115.22 }, { kota: 'Jayapura', lat: -2.53, lng: 140.72 },
+          ];
+          const lats = cities.map((c) => c.lat).join(',');
+          const lngs = cities.map((c) => c.lng).join(',');
+          const omRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lats}&longitude=${lngs}&current=pm2_5,pm10`);
+          if (omRes.ok) {
+            const raw = await omRes.json();
+            const list = Array.isArray(raw) ? raw : [raw];
+            const features = list.map((item: any, idx: number) => {
+              const ispu = Math.round(Number(item?.current?.pm2_5) || 35);
+              return {
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [cities[idx].lng, cities[idx].lat] },
+                properties: {
+                  kota: cities[idx].kota,
+                  ispu,
+                  pm2_5: ispu,
+                  category: ispu <= 50 ? 'BAIK' : ispu <= 100 ? 'SEDANG' : 'TIDAK SEHAT',
+                  waktu: new Date().toLocaleString('id-ID'),
+                  dataType: 'aqms',
+                },
+              };
+            });
+            data = { type: 'FeatureCollection', features };
+          }
+        }
+        if (!data || !Array.isArray(data.features)) throw new Error('Data kualitas udara tidak tersedia');
         const sourceId = 'source-weather-air-quality';
         if (map.getSource(sourceId)) {
           (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(data);
@@ -906,9 +1063,59 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           map.on('mouseleave', 'layer-weather-air-quality-circle', () => { map.getCanvas().style.cursor = ''; });
         }
       } else if (layerId === 'weather-rain-potential') {
-        const res = await fetch('/api/weather/grid?kind=rain');
-        if (!res.ok) throw new Error(`Weather grid HTTP ${res.status}`);
-        const data = await res.json();
+        let data: any = null;
+        try {
+          const res = await fetch('./api/weather/grid?kind=rain');
+          if (res.ok && (res.headers.get('content-type') || '').includes('json')) {
+            data = await res.json();
+          }
+        } catch {
+          // Fallback to Open-Meteo city forecast below
+        }
+        if (!data || !Array.isArray(data.features)) {
+          const cities = [
+            { kota: 'Banda Aceh', lat: 5.55, lng: 95.32 }, { kota: 'Medan', lat: 3.59, lng: 98.67 },
+            { kota: 'Padang', lat: -0.95, lng: 100.35 }, { kota: 'Pekanbaru', lat: 0.51, lng: 101.45 },
+            { kota: 'Palembang', lat: -2.99, lng: 104.76 }, { kota: 'Jakarta', lat: -6.21, lng: 106.85 },
+            { kota: 'Bandung', lat: -6.91, lng: 107.61 }, { kota: 'Semarang', lat: -6.97, lng: 110.42 },
+            { kota: 'Yogyakarta', lat: -7.8, lng: 110.36 }, { kota: 'Surabaya', lat: -7.25, lng: 112.75 },
+            { kota: 'Denpasar', lat: -8.65, lng: 115.22 }, { kota: 'Kupang', lat: -10.17, lng: 123.58 },
+            { kota: 'Pontianak', lat: -0.02, lng: 109.34 }, { kota: 'Banjarmasin', lat: -3.32, lng: 114.59 },
+            { kota: 'Balikpapan', lat: -1.24, lng: 116.83 }, { kota: 'Makassar', lat: -5.14, lng: 119.43 },
+            { kota: 'Manado', lat: 1.47, lng: 124.84 }, { kota: 'Ambon', lat: -3.7, lng: 128.18 },
+            { kota: 'Sorong', lat: -0.88, lng: 131.25 }, { kota: 'Jayapura', lat: -2.53, lng: 140.72 },
+          ];
+          const lats = cities.map((c) => c.lat).join(',');
+          const lngs = cities.map((c) => c.lng).join(',');
+          const omRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=temperature_2m,relative_humidity_2m,precipitation,cloud_cover,wind_speed_10m&hourly=precipitation_probability&forecast_days=1&timezone=Asia%2FJakarta`
+          );
+          if (omRes.ok) {
+            const raw = await omRes.json();
+            const list = Array.isArray(raw) ? raw : [raw];
+            const features = list.map((item: any, idx: number) => {
+              const prob = Number(item?.hourly?.precipitation_probability?.[0]) || 25;
+              const t = Math.round(Number(item?.current?.temperature_2m) || 29);
+              return {
+                type: 'Feature',
+                geometry: { type: 'Point', coordinates: [cities[idx].lng, cities[idx].lat] },
+                properties: {
+                  kota: cities[idx].kota,
+                  cityName: cities[idx].kota,
+                  t,
+                  hu: Math.round(Number(item?.current?.relative_humidity_2m) || 75),
+                  ws: Math.round(Number(item?.current?.wind_speed_10m) || 12),
+                  tcc: Math.round(Number(item?.current?.cloud_cover) || 50),
+                  precipitation_probability: prob,
+                  weather_desc: prob >= 60 ? 'Hujan Ringan–Sedang' : prob >= 35 ? 'Berawan Tebal' : 'Cerah Berawan',
+                  dataType: 'bmkg-forecast',
+                },
+              };
+            });
+            data = { type: 'FeatureCollection', features };
+          }
+        }
+        if (!data || !Array.isArray(data.features)) throw new Error('Data prakiraan cuaca tidak tersedia');
         const sourceId = 'source-weather-rain-potential';
         if (map.getSource(sourceId)) {
           (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(data);
@@ -1081,7 +1288,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           console.warn('API oil palm failed, trying direct static fallback:', fetchErr);
         }
         if (!data || !data.features) {
-          const fallbackRes = await fetch('/indonesia-oil-palm-concessions.geojson');
+          const fallbackRes = await fetch('./indonesia-oil-palm-concessions.geojson');
           if (fallbackRes.ok) data = await fallbackRes.json();
         }
         if (!data || !data.features) throw new Error('Data konsesi kelapa sawit tidak tersedia');
@@ -1198,7 +1405,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           console.warn('API peatlands failed, trying direct static fallback:', fetchErr);
         }
         if (!data || !data.features) {
-          const fallbackRes = await fetch('/indonesia-peat-lands.geojson');
+          const fallbackRes = await fetch('./indonesia-peat-lands.geojson');
           if (fallbackRes.ok) data = await fallbackRes.json();
         }
         if (!data || !data.features) throw new Error('Data lahan gambut Indonesia tidak tersedia');
@@ -1300,10 +1507,11 @@ export const MapViewer: React.FC<MapViewerProps> = ({
 
         const rasterSourceId = 'source-gfw-mangrove-extent-raster';
         const vis = layerVisibilityRef.current['gfw-mangrove-extent'] ? 'visible' : 'none';
-        if (!map.getSource(rasterSourceId)) {
+        const isStaticHost = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
+        if (!map.getSource(rasterSourceId) && !isStaticHost) {
           map.addSource(rasterSourceId, {
             type: 'raster',
-            tiles: ['/api/mangrove/tiles/{z}/{x}/{y}.png'],
+            tiles: ['./api/mangrove/tiles/{z}/{x}/{y}.png'],
             tileSize: 256,
             attribution: 'BIG Kebijakan Satu Peta (Layer 57) / UNEP-WCMC / GMW / GFW',
           });
@@ -1324,13 +1532,13 @@ export const MapViewer: React.FC<MapViewerProps> = ({
 
         let data: any = null;
         try {
-          const res = await fetch('/api/mangrove/extent-geojson');
-          if (res.ok) data = await res.json();
+          const res = await fetch('./api/mangrove/extent-geojson');
+          if (res.ok && (res.headers.get('content-type') || '').includes('json')) data = await res.json();
         } catch (fetchErr) {
           console.warn('API mangrove extent failed, trying direct static fallback:', fetchErr);
         }
         if (!data || !data.features) {
-          const fallbackRes = await fetch('/indonesia-mangrove-extent.geojson');
+          const fallbackRes = await fetch('./indonesia-mangrove-extent.geojson');
           if (fallbackRes.ok) data = await fallbackRes.json();
         }
         if (!data || !data.features) throw new Error('Data sebaran habitat mangrove Indonesia tidak tersedia');
@@ -1462,7 +1670,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           console.warn('API wood fiber failed, trying direct static fallback:', fetchErr);
         }
         if (!data || !data.features) {
-          const fallbackRes = await fetch('/indonesia-wood-fiber-concessions.geojson');
+          const fallbackRes = await fetch('./indonesia-wood-fiber-concessions.geojson');
           if (fallbackRes.ok) data = await fallbackRes.json();
         }
         if (!data || !data.features) throw new Error('Data konsesi serat kayu (HTI) Indonesia tidak tersedia');
@@ -2317,9 +2525,24 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       const lat = parseFloat(e.lngLat.lat.toFixed(4));
 
       try {
-        const res = await fetch(`/api/weather/point?lat=${lat}&lng=${lng}`);
-        if (res.ok) {
-          const weatherData = await res.json();
+        let weatherData: any = null;
+        try {
+          const res = await fetch(`./api/weather/point?lat=${lat}&lng=${lng}`);
+          if (res.ok && (res.headers.get('content-type') || '').includes('json')) {
+            weatherData = await res.json();
+          }
+        } catch {
+          // Fallback to Open-Meteo below
+        }
+        if (!weatherData || !weatherData.current) {
+          const omRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=Asia%2FJakarta`
+          );
+          if (omRes.ok) {
+            weatherData = await omRes.json();
+          }
+        }
+        if (weatherData) {
           onSelectFeature({
             type: 'weather',
             title: `Prakiraan cuaca di koordinat (${lat}°, ${lng}°)`,

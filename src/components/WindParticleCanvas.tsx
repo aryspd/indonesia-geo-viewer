@@ -52,15 +52,96 @@ export const WindParticleCanvas: React.FC<WindParticleCanvasProps> = ({
     "GFS 10m Wind · Sipongi Opsroom",
   );
 
-  // 1. Fetch real wind field from backend proxy
+  // 1. Fetch real wind field from backend proxy (with direct Sipongi GFS & Open-Meteo fallback for static hosting)
   useEffect(() => {
     let isMounted = true;
     async function loadWindField() {
       try {
-        const res = await fetch("/api/weather/wind-field");
-        if (!res.ok) throw new Error("Wind field error");
-        const data = await res.json();
-        if (!isMounted) return;
+        let data: any = null;
+        try {
+          const res = await fetch("./api/weather/wind-field");
+          if (res.ok && (res.headers.get("content-type") || "").includes("json")) {
+            data = await res.json();
+          }
+        } catch {
+          // Backend unavailable on static GitHub Pages; proceed to direct public API fallback
+        }
+
+        if (!data || (!data.grid && !data.points)) {
+          try {
+            const gfsRes = await fetch("https://opsroom.sipongidata.my.id/api/gfs");
+            if (gfsRes.ok) {
+              const gfsRecords: any[] = await gfsRes.json();
+              const uRec = gfsRecords.find(
+                (r) => r?.header?.parameterCategory === 2 && r?.header?.parameterNumber === 2 && Array.isArray(r?.data)
+              );
+              const vRec = gfsRecords.find(
+                (r) => r?.header?.parameterCategory === 2 && r?.header?.parameterNumber === 3 && Array.isArray(r?.data)
+              );
+              if (uRec && vRec) {
+                const nx = Number(uRec.header.nx) || 360;
+                const la1 = Number(uRec.header.la1) || 90;
+                const lo1 = Number(uRec.header.lo1) || 0;
+                const dx = Number(uRec.header.dx) || 1;
+                const dy = Number(uRec.header.dy) || 1;
+                const minLat = -15, maxLat = 10, minLng = 90, maxLng = 145;
+                const rows = maxLat - minLat + 1;
+                const cols = maxLng - minLng + 1;
+                const uArr: number[] = [];
+                const vArr: number[] = [];
+                for (let lat = minLat; lat <= maxLat; lat++) {
+                  const rowIdx = Math.round((la1 - lat) / dy);
+                  for (let lng = minLng; lng <= maxLng; lng++) {
+                    const colIdx = Math.round((lng - lo1) / dx);
+                    const gIdx = rowIdx * nx + colIdx;
+                    uArr.push(Number(((Number(uRec.data[gIdx]) || 0) * 3.6).toFixed(2)));
+                    vArr.push(Number(((Number(vRec.data[gIdx]) || 0) * 3.6).toFixed(2)));
+                  }
+                }
+                data = {
+                  grid: { minLat, maxLat, minLng, maxLng, dLat: 1, dLng: 1, rows, cols, u: uArr, v: vArr },
+                  metadata: { provider: "Sipongi Opsroom / NOAA NCEP GFS" },
+                };
+              }
+            }
+          } catch {
+            // Proceed to Open-Meteo fallback
+          }
+        }
+
+        if (!data || (!data.grid && !data.points)) {
+          const sampleCoords = [
+            [-5.5, 95.3], [3.6, 98.7], [-0.9, 100.4], [0.5, 101.4], [-3.0, 104.8],
+            [-6.2, 106.8], [-6.9, 110.4], [-7.3, 112.7], [-8.7, 115.2], [-0.02, 109.3],
+            [-3.3, 114.6], [-1.2, 116.8], [0.5, 117.5], [-5.1, 119.4], [-0.9, 119.9],
+            [1.5, 124.8], [-3.7, 128.2], [-0.9, 131.3], [-2.5, 140.7], [-8.5, 140.4],
+          ];
+          const lats = sampleCoords.map((c) => c[0]).join(",");
+          const lngs = sampleCoords.map((c) => c[1]).join(",");
+          const omRes = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh`
+          );
+          if (omRes.ok) {
+            const raw = await omRes.json();
+            const arr = Array.isArray(raw) ? raw : [raw];
+            const points: WindPoint[] = arr.map((item: any, idx: number) => {
+              const speed = Number(item?.current?.wind_speed_10m) || 12;
+              const dir = Number(item?.current?.wind_direction_10m) || 110;
+              const rad = ((dir + 180) * Math.PI) / 180;
+              return {
+                lat: sampleCoords[idx][0],
+                lng: sampleCoords[idx][1],
+                speed,
+                direction: dir,
+                u: speed * Math.sin(rad),
+                v: speed * Math.cos(rad),
+              };
+            });
+            data = { points, metadata: { provider: "Open-Meteo GFS" } };
+          }
+        }
+
+        if (!isMounted || !data) return;
         if (
           data.grid &&
           Array.isArray(data.grid.u) &&
