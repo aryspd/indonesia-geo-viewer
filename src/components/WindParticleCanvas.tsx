@@ -441,17 +441,17 @@ export const WindParticleCanvas: React.FC<WindParticleCanvasProps> = ({
         style={{ opacity }}
       />
       {dataLoaded && (
-        <div className="pointer-events-none absolute bottom-12 left-4 z-20 hidden sm:flex items-center gap-2.5 px-3 py-1.5 bg-[#114232]/90 backdrop-blur-md border border-[#87A922]/65 rounded-xl text-[10px] text-[#F7F6BB] shadow-lg">
-          <span className="font-semibold text-[#FCDC2A]">{providerLabel}</span>
+        <div className="pointer-events-none absolute bottom-12 left-4 z-20 hidden sm:flex items-center gap-2.5 px-3 py-1.5 bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--accent-aqua-border)] rounded-xl text-[10px] text-[var(--text-primary)] shadow-lg">
+          <span className="font-semibold text-[var(--accent-aqua)]">{providerLabel}</span>
           <div className="flex items-center gap-1 font-mono">
-            <span className="text-slate-400">10</span>
+            <span className="text-[var(--text-muted)]">10</span>
             <span className="w-3 h-2 rounded-xs bg-[#38bdf8]" />
             <span className="w-3 h-2 rounded-xs bg-[#06b6d4]" />
             <span className="w-3 h-2 rounded-xs bg-[#10b981]" />
             <span className="w-3 h-2 rounded-xs bg-[#eab308]" />
             <span className="w-3 h-2 rounded-xs bg-[#f97316]" />
             <span className="w-3 h-2 rounded-xs bg-[#ef4444]" />
-            <span className="text-slate-400">55+ km/j</span>
+            <span className="text-[var(--text-muted)]">55+ km/j</span>
           </div>
         </div>
       )}

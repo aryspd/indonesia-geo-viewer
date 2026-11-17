@@ -1741,7 +1741,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
               },
               paint: {
                 'text-color': '#fef9c3',
-                'text-halo-color': '#114232',
+                'text-halo-color': '#050d0f',
                 'text-halo-width': 1.6,
               },
             },
@@ -2674,28 +2674,30 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       />
 
       {/* Live Coordinates and Map Zoom Indicator (Bottom-Right) */}
-      <div className="absolute bottom-4 right-4 z-20 hidden sm:flex items-center gap-3 px-3.5 py-1.5 bg-[#114232]/90 backdrop-blur-md border border-[#87A922]/65 rounded-xl text-[11px] font-mono tabular-nums text-[#F7F6BB] shadow-lg">
+      <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 z-20 hidden sm:flex items-center gap-3 px-3.5 py-1.5 bg-[var(--glass-bg)] backdrop-blur-md border border-[var(--accent-aqua-border)] rounded-xl text-[11px] font-mono tabular-nums text-[var(--text-primary)] shadow-lg">
         <span>Lng: {cursorCoords.lng.toFixed(4)}° E</span>
         <span>Lat: {cursorCoords.lat.toFixed(4)}° S</span>
-        <span className="text-[#FCDC2A] font-semibold">Zoom: {cursorCoords.zoom}x</span>
+        <span className="text-[var(--accent-aqua)] font-semibold">Zoom: {cursorCoords.zoom}x</span>
       </div>
 
       {/* Measurement Mode Floating HUD */}
       {measureMode !== 'none' && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 bg-[#114232]/95 backdrop-blur-xl border border-[#FCDC2A] rounded-2xl px-4 py-2.5 shadow-2xl text-[#F7F6BB] flex items-center gap-3 text-xs animate-in fade-in">
-          <Ruler className="w-4 h-4 text-[#FCDC2A] shrink-0" />
-          <div>
-            <div className="font-semibold text-[#FCDC2A]">
-              {measureMode === 'distance' ? 'Mode Pengukuran Jarak' : 'Mode Pengukuran Luas'}
-            </div>
-            <div className="text-[11px] text-[#F7F6BB]">
-              {measureResult || 'Klik pada peta untuk menambahkan titik pengukuran'}
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-1rem)] sm:w-auto max-w-md bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--accent-emerald-border)] rounded-2xl px-3.5 sm:px-4 py-2.5 shadow-2xl text-[var(--text-primary)] flex items-center justify-between gap-3 text-xs animate-in fade-in">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Ruler className="w-4 h-4 text-[var(--accent-emerald-bright)] shrink-0" />
+            <div className="min-w-0">
+              <div className="font-semibold text-[var(--accent-aqua)]">
+                {measureMode === 'distance' ? 'Mode Pengukuran Jarak' : 'Mode Pengukuran Luas'}
+              </div>
+              <div className="text-[11px] text-[var(--text-secondary)] truncate">
+                {measureResult || 'Klik pada peta untuk menambahkan titik pengukuran'}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 ml-2">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={resetMeasurement}
-              className="p-1.5 bg-[#87A922]/25 hover:bg-[#87A922]/45 border border-[#87A922]/60 text-[#F7F6BB] rounded-lg transition-colors"
+              className="p-1.5 bg-[var(--accent-aqua-soft)] hover:bg-[var(--bg-surface-hover)] border border-[var(--accent-aqua-border)] text-[var(--text-primary)] rounded-lg transition-colors cursor-pointer"
               title="Reset Titik Pengukuran"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -2705,7 +2707,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
                 onSetMeasureMode('none');
                 resetMeasurement();
               }}
-              className="px-2.5 py-1 text-[11px] bg-[#FCDC2A] hover:bg-[#F7F6BB] text-[#114232] rounded-lg font-bold transition-colors"
+              className="px-2.5 py-1 text-[11px] bg-[var(--accent-emerald)] hover:bg-[var(--accent-emerald-bright)] text-[#050d0f] rounded-lg font-bold transition-colors cursor-pointer"
             >
               Selesai
             </button>

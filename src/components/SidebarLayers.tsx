@@ -252,35 +252,44 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
 
   return (
     <>
+      {/* Mobile/Tablet Backdrop */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 top-14 z-25 bg-[var(--glass-overlay)] backdrop-blur-[2px] lg:hidden transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
       {/* Floating Glassmorphic Sidebar Drawer */}
       <aside
-        className={`fixed top-16 left-3 bottom-3 z-30 w-84 md:w-96 rounded-2xl bg-[#114232]/95 backdrop-blur-xl border border-[#87A922]/70 flex flex-col text-[#F7F6BB] shadow-2xl overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`fixed top-16 inset-x-2 bottom-2 sm:inset-x-auto sm:left-3 sm:bottom-3 z-30 sm:w-84 md:w-92 lg:w-96 rounded-2xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--accent-aqua-border)] flex flex-col text-[var(--text-primary)] shadow-2xl shadow-black/40 overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen
             ? "translate-x-0 opacity-100"
             : "-translate-x-[110%] opacity-0 pointer-events-none"
         }`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#87A922]/50 bg-gradient-to-r from-[#87A922]/25 to-[#114232]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--accent-aqua-border)] bg-gradient-to-r from-[var(--accent-aqua-soft)] via-[var(--bg-surface)] to-[var(--bg-surface)]">
           <div>
-            <h2 className="text-sm font-bold text-[#F7F6BB] tracking-tight">
+            <h2 className="text-sm font-bold text-[var(--text-primary)] tracking-tight">
               Katalog Layer Peta
             </h2>
-            <p className="text-[11px] text-[#F7F6BB]/75">
+            <p className="text-[11px] text-[var(--text-secondary)]">
               Pilih layer aktif & sesuaikan transparansi
             </p>
           </div>
           <div className="flex items-center gap-1">
             <button
               onClick={onResetPreset}
-              className="p-1.5 text-[#F7F6BB]/80 hover:text-white hover:bg-[#87A922]/35 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--accent-aqua)] hover:bg-[var(--accent-aqua-soft)] rounded-lg transition-colors cursor-pointer"
               title="Reset ke Preset Bawaan"
             >
               <RotateCcw className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-[#F7F6BB]/80 hover:text-white hover:bg-[#87A922]/35 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-aqua-soft)] rounded-lg transition-colors cursor-pointer"
               title="Tutup Katalog Layer"
             >
               <X className="w-4 h-4" />
@@ -289,20 +298,20 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
         </div>
 
         {/* Search & Quick Filter Pills */}
-        <div className="p-3 border-b border-[#87A922]/45 space-y-2.5 bg-[#114232]/85">
+        <div className="p-3 border-b border-[var(--accent-aqua-border)] space-y-2.5 bg-[var(--bg-surface)]/80">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[#FCDC2A]/80 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-[var(--accent-aqua)] pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari layer peta..."
-              className="w-full pl-8 pr-7 py-1.5 text-xs bg-[#87A922]/15 border border-[#87A922]/60 rounded-lg text-[#F7F6BB] placeholder:text-[#F7F6BB]/50 focus:outline-none focus:border-[#FCDC2A]"
+              className="w-full pl-8 pr-7 py-1.5 text-sm sm:text-xs bg-[var(--bg-surface-elevated)] border border-[var(--accent-aqua-border)] rounded-xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-aqua)]"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-2 text-[#F7F6BB]/75 hover:text-white"
+                className="absolute right-2.5 top-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -313,10 +322,10 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
             <button
               type="button"
               onClick={() => setFilterMode("all")}
-              className={`py-1.5 px-2.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+              className={`py-1.5 px-2.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
                 filterMode === "all"
-                  ? "bg-[#FCDC2A] text-[#114232] shadow-sm"
-                  : "bg-[#87A922]/15 text-[#F7F6BB]/85 hover:bg-[#87A922]/30 border border-[#87A922]/50"
+                  ? "bg-[var(--accent-aqua)] text-[#050d0f] shadow-sm"
+                  : "bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] border border-[var(--accent-aqua-border)]"
               }`}
             >
               Semua Layer ({totalCount})
@@ -324,10 +333,10 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
             <button
               type="button"
               onClick={() => setFilterMode("active")}
-              className={`py-1.5 px-2.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+              className={`py-1.5 px-2.5 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
                 filterMode === "active"
-                  ? "bg-[#FCDC2A] text-[#114232] shadow-sm"
-                  : "bg-[#87A922]/15 text-[#F7F6BB]/85 hover:bg-[#87A922]/30 border border-[#87A922]/50"
+                  ? "bg-[var(--accent-emerald)] text-[#050d0f] shadow-sm"
+                  : "bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] border border-[var(--accent-aqua-border)]"
               }`}
             >
               Layer Aktif ({activeTotalCount})
@@ -362,49 +371,49 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
             return (
               <div
                 key={category}
-                className="bg-[#87A922]/10 rounded-xl border border-[#87A922]/50 overflow-hidden"
+                className="bg-[var(--bg-surface-elevated)]/70 rounded-xl border border-[var(--accent-aqua-border)] overflow-hidden"
               >
                 {/* Category Header */}
                 <button
                   onClick={() => toggleCategory(category)}
-                  className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-[#87A922]/25 transition-colors cursor-pointer"
+                  className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-[var(--accent-aqua-soft)] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="p-1.5 rounded-lg bg-[#87A922]/30 text-[#FCDC2A] shrink-0">
+                    <span className="p-1.5 rounded-lg bg-[var(--accent-aqua-soft)] text-[var(--accent-aqua)] shrink-0">
                       <Icon className="w-3.5 h-3.5" />
                     </span>
                     <div className="min-w-0">
-                      <div className="text-xs font-semibold text-[#F7F6BB] truncate">
+                      <div className="text-xs font-semibold text-[var(--text-primary)] truncate">
                         {catConfig.name}
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {activeCount > 0 && (
-                      <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#FCDC2A]/20 text-[#FCDC2A] border border-[#FCDC2A]/60 rounded-full">
+                      <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[var(--accent-emerald-soft)] text-[var(--accent-emerald-bright)] border border-[var(--accent-emerald-border)] rounded-full">
                         {activeCount} aktif
                       </span>
                     )}
                     {isExpanded ? (
-                      <ChevronDown className="w-3.5 h-3.5 text-[#F7F6BB]/75" />
+                      <ChevronDown className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
                     ) : (
-                      <ChevronRight className="w-3.5 h-3.5 text-[#F7F6BB]/75" />
+                      <ChevronRight className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
                     )}
                   </div>
                 </button>
 
                 {/* Category Layer Items */}
                 {isExpanded && (
-                  <div className="p-2.5 space-y-2 border-t border-[#87A922]/40 bg-[#114232]/70">
+                  <div className="p-2.5 space-y-2 border-t border-[var(--accent-aqua-border)] bg-[var(--bg-obsidian)]/45">
                     {category === "disaster" && (
                       <div className="flex items-center justify-between gap-2 px-1 pb-1">
-                        <span className="text-[10px] text-[#F7F6BB]/70">
+                        <span className="text-[10px] text-[var(--text-secondary)]">
                           Sensor NASA FIRMS VIIRS 24 jam
                         </span>
                         <button
                           type="button"
                           onClick={onRefreshFirms}
-                          className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-[#FCDC2A]/60 bg-[#87A922]/25 px-2 py-1 text-[10px] font-medium text-[#FCDC2A] hover:bg-[#87A922]/45 transition-colors cursor-pointer"
+                          className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-[var(--accent-aqua-border)] bg-[var(--accent-aqua-soft)] px-2 py-1 text-[10px] font-medium text-[var(--accent-aqua)] hover:bg-[var(--bg-surface-hover)] transition-colors cursor-pointer"
                         >
                           <RefreshCw className="h-3 w-3" /> Muat ulang VIIRS
                         </button>
@@ -415,8 +424,8 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                       <div
                         className={`rounded-xl p-2.5 border transition-all ${
                           quakesVisible
-                            ? "bg-[#87A922]/25 border-[#FCDC2A]/70 shadow-sm"
-                            : "bg-[#87A922]/10 border-[#87A922]/35 hover:bg-[#87A922]/20"
+                            ? "bg-[var(--accent-emerald-soft)] border-[var(--accent-emerald-border)] shadow-sm"
+                            : "bg-[var(--bg-surface-elevated)]/60 border-[var(--accent-aqua-border)] hover:bg-[var(--bg-surface-hover)]"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -425,19 +434,19 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                               type="checkbox"
                               checked={quakesVisible}
                               onChange={() => onToggleQuakes?.()}
-                              className="mt-0.5 rounded border-[#87A922] bg-[#114232] accent-[#FCDC2A] focus:ring-0 focus:ring-offset-0"
+                              className="mt-0.5 rounded border-[var(--accent-aqua-border)] bg-[var(--bg-obsidian)] accent-[#10b981] focus:ring-0 focus:ring-offset-0"
                             />
                             <div className="min-w-0">
                               <div
-                                className={`text-xs font-semibold leading-snug ${quakesVisible ? "text-white" : "text-[#F7F6BB]/80"}`}
+                                className={`text-xs font-semibold leading-snug ${quakesVisible ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}
                               >
                                 Gempabumi Terkini — BMKG TEWS & USGS
                               </div>
-                              <div className="text-[11px] text-[#F7F6BB]/70 mt-0.5 line-clamp-1">
+                              <div className="text-[11px] text-[var(--text-secondary)] mt-0.5 line-clamp-1">
                                 Episenter gempa M5+, dirasakan, & shakemap
                                 real-time BMKG
                               </div>
-                              <div className="mt-1 text-[10px] text-[#FCDC2A] font-mono">
+                              <div className="mt-1 text-[10px] text-[var(--accent-aqua)] font-mono">
                                 {quakesCount !== null
                                   ? `${quakesCount} kejadian gempa termuat`
                                   : "Memuat feed BMKG…"}
@@ -447,7 +456,7 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                         </div>
                         {quakesVisible && onChangeQuakesOpacity && (
                           <div className="mt-2.5 pl-6 pr-1 flex items-center gap-3">
-                            <span className="text-[10px] text-[#F7F6BB]/75 font-mono">
+                            <span className="text-[10px] text-[var(--text-secondary)] font-mono">
                               Opasitas
                             </span>
                             <input
@@ -461,9 +470,9 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                                   parseFloat(e.target.value),
                                 )
                               }
-                              className="w-full h-1.5 bg-[#114232] rounded-lg appearance-none cursor-pointer accent-[#FCDC2A]"
+                              className="w-full h-1.5 bg-[var(--bg-obsidian)] rounded-lg appearance-none cursor-pointer accent-[#7de3e0]"
                             />
-                            <span className="text-[10px] text-[#FCDC2A] font-mono w-8 text-right tabular-nums">
+                            <span className="text-[10px] text-[var(--accent-aqua)] font-mono w-8 text-right tabular-nums">
                               {Math.round(quakesOpacity * 100)}%
                             </span>
                           </div>
@@ -476,8 +485,8 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                         key={layer.id}
                         className={`rounded-xl p-2.5 border transition-all ${
                           layer.visible
-                            ? "bg-[#87A922]/25 border-[#FCDC2A]/70 shadow-sm"
-                            : "bg-[#87A922]/10 border-[#87A922]/35 hover:bg-[#87A922]/20"
+                            ? "bg-[var(--accent-emerald-soft)] border-[var(--accent-emerald-border)] shadow-sm"
+                            : "bg-[var(--bg-surface-elevated)]/60 border-[var(--accent-aqua-border)] hover:bg-[var(--bg-surface-hover)]"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -486,19 +495,19 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                               type="checkbox"
                               checked={layer.visible}
                               onChange={() => onToggleLayer(layer.id)}
-                              className="mt-0.5 rounded border-[#87A922] bg-[#114232] accent-[#FCDC2A] focus:ring-0 focus:ring-offset-0 shrink-0"
+                              className="mt-0.5 rounded border-[var(--accent-aqua-border)] bg-[var(--bg-obsidian)] accent-[#10b981] focus:ring-0 focus:ring-offset-0 shrink-0"
                             />
                             <div className="min-w-0">
                               <div
                                 className={`text-xs font-semibold leading-snug ${
                                   layer.visible
-                                    ? "text-white"
-                                    : "text-[#F7F6BB]/80"
+                                    ? "text-[var(--text-primary)]"
+                                    : "text-[var(--text-secondary)]"
                                 }`}
                               >
                                 {layer.name}
                               </div>
-                              <div className="text-[11px] text-[#F7F6BB]/70 mt-0.5 line-clamp-1">
+                              <div className="text-[11px] text-[var(--text-secondary)] mt-0.5 line-clamp-1">
                                 {layer.description}
                               </div>
                               {firmsSensorForLayer[layer.id] && (
@@ -512,16 +521,16 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                                     firmsSensorStatus[
                                       firmsSensorForLayer[layer.id]
                                     ]?.state === "error"
-                                      ? "text-rose-300"
+                                      ? "text-rose-400"
                                       : firmsSensorStatus[
                                             firmsSensorForLayer[layer.id]
                                           ]?.state === "ok"
-                                        ? "text-[#FCDC2A]"
+                                        ? "text-[var(--accent-emerald-bright)]"
                                         : firmsSensorStatus[
                                               firmsSensorForLayer[layer.id]
                                             ]?.state === "loading"
-                                          ? "text-[#F7F6BB]"
-                                          : "text-amber-300"
+                                          ? "text-[var(--accent-aqua)]"
+                                          : "text-amber-400"
                                   }`}
                                 >
                                   {firmsStatusLabel(layer.id)}
@@ -534,14 +543,14 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                             {layer.legend && (
                               <button
                                 onClick={() => toggleLegend(layer.id)}
-                                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                                className={`p-1.5 sm:p-1 rounded-lg transition-colors cursor-pointer ${
                                   expandedLegends[layer.id]
-                                    ? "bg-[#FCDC2A] text-[#114232]"
-                                    : "text-[#F7F6BB]/75 hover:text-white hover:bg-[#87A922]/35"
+                                    ? "bg-[var(--accent-aqua)] text-[#050d0f]"
+                                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-aqua-soft)]"
                                 }`}
                                 title="Lihat Legenda Simbol"
                               >
-                                <Sliders className="w-3 h-3" />
+                                <Sliders className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                               </button>
                             )}
                             <button
@@ -551,10 +560,10 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                                   meta: layer.metadata,
                                 })
                               }
-                              className="p-1 rounded-lg text-[#F7F6BB]/75 hover:text-white hover:bg-[#87A922]/35 transition-colors cursor-pointer"
+                              className="p-1.5 sm:p-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-aqua-soft)] transition-colors cursor-pointer"
                               title="Informasi Metadata & Sumber Data"
                             >
-                              <Info className="w-3 h-3" />
+                              <Info className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                             </button>
                           </div>
                         </div>
@@ -562,7 +571,7 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                         {/* Opacity Slider (visible when layer is checked) */}
                         {layer.visible && (
                           <div className="mt-2.5 pl-6 pr-1 flex items-center gap-3">
-                            <span className="text-[10px] text-[#F7F6BB]/75 font-mono">
+                            <span className="text-[10px] text-[var(--text-secondary)] font-mono">
                               Opasitas
                             </span>
                             <input
@@ -577,9 +586,9 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                                   parseFloat(e.target.value),
                                 )
                               }
-                              className="flex-1 h-1.5 bg-[#114232] rounded-lg appearance-none cursor-pointer accent-[#FCDC2A]"
+                              className="flex-1 h-1.5 bg-[var(--bg-obsidian)] rounded-lg appearance-none cursor-pointer accent-[#7de3e0]"
                             />
-                            <span className="text-[10px] text-[#FCDC2A] font-mono tabular-nums w-8 text-right">
+                            <span className="text-[10px] text-[var(--accent-aqua)] font-mono tabular-nums w-8 text-right">
                               {Math.round(layer.opacity * 100)}%
                             </span>
                           </div>
@@ -587,8 +596,8 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
 
                         {/* Inline Legend */}
                         {expandedLegends[layer.id] && layer.legend && (
-                          <div className="mt-2 ml-6 mr-1 px-2.5 py-2 bg-[#114232]/90 rounded-lg border border-[#87A922]/55 text-[11px] space-y-1.5">
-                            <div className="text-[10px] font-semibold text-[#FCDC2A] uppercase tracking-wider">
+                          <div className="mt-2 ml-6 mr-1 px-2.5 py-2 bg-[var(--bg-surface)] rounded-lg border border-[var(--accent-aqua-border)] text-[11px] space-y-1.5">
+                            <div className="text-[10px] font-semibold text-[var(--accent-aqua)] uppercase tracking-wider">
                               Legenda Simbol:
                             </div>
                             {layer.legend.map((item, idx) => (
@@ -600,7 +609,7 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                                   className="w-3 h-3 rounded-xs shrink-0 border border-white/25"
                                   style={{ backgroundColor: item.color }}
                                 />
-                                <span className="text-[#F7F6BB]">
+                                <span className="text-[var(--text-primary)]">
                                   {item.label}
                                 </span>
                               </div>
@@ -616,34 +625,34 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
           })}
 
           {/* Collapsible BMKG Village-Level Forecast (ADM4) Accordion */}
-          <div className="bg-[#87A922]/10 rounded-xl border border-[#87A922]/50 overflow-hidden">
+          <div className="bg-[var(--bg-surface-elevated)]/70 rounded-xl border border-[var(--accent-aqua-border)] overflow-hidden">
             <button
               type="button"
               onClick={() => setBmkgAccordionOpen((prev) => !prev)}
-              className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-[#87A922]/25 transition-colors cursor-pointer"
+              className="w-full px-3 py-2.5 flex items-center justify-between text-left hover:bg-[var(--accent-aqua-soft)] transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
-                <span className="p-1.5 rounded-lg bg-[#87A922]/30 text-[#FCDC2A]">
+                <span className="p-1.5 rounded-lg bg-[var(--accent-aqua-soft)] text-[var(--accent-aqua)]">
                   <Compass className="w-3.5 h-3.5" />
                 </span>
                 <div>
-                  <div className="text-xs font-semibold text-[#F7F6BB]">
+                  <div className="text-xs font-semibold text-[var(--text-primary)]">
                     Cek Cuaca BMKG per Kota/Desa
                   </div>
-                  <div className="text-[10px] text-[#F7F6BB]/65">
+                  <div className="text-[10px] text-[var(--text-secondary)]">
                     Lookup kode wilayah ADM4 & 23 kota cepat
                   </div>
                 </div>
               </div>
               {bmkgAccordionOpen ? (
-                <ChevronDown className="w-3.5 h-3.5 text-[#F7F6BB]/75" />
+                <ChevronDown className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
               ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-[#F7F6BB]/75" />
+                <ChevronRight className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
               )}
             </button>
 
             {bmkgAccordionOpen && (
-              <div className="p-3 border-t border-[#87A922]/40 bg-[#114232]/75 space-y-2">
+              <div className="p-3 border-t border-[var(--accent-aqua-border)] bg-[var(--bg-obsidian)]/45 space-y-2">
                 <select
                   value={
                     BMKG_QUICK_CITIES.some((c) => c.adm4 === bmkgAdm4Code)
@@ -654,7 +663,7 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                     const code = e.target.value;
                     if (code) void fetchBmkgForecast(code);
                   }}
-                  className="w-full px-2.5 py-1.5 text-[11px] bg-[#114232] border border-[#87A922]/65 rounded-lg text-[#F7F6BB] focus:outline-none focus:border-[#FCDC2A]"
+                  className="w-full px-2.5 py-1.5 text-xs sm:text-[11px] bg-[var(--bg-surface)] border border-[var(--accent-aqua-border)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-aqua)]"
                   aria-label="Pilih cepat kota Indonesia"
                 >
                   <option value="">
@@ -676,30 +685,30 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                     }}
                     placeholder="Kode ADM4: 31.71.01.1001"
                     maxLength={13}
-                    className="min-w-0 flex-1 px-2.5 py-1.5 text-[11px] bg-[#114232] border border-[#87A922]/65 rounded-lg text-[#F7F6BB] placeholder:text-[#F7F6BB]/50 focus:outline-none focus:border-[#FCDC2A]"
+                    className="min-w-0 flex-1 px-2.5 py-1.5 text-xs sm:text-[11px] bg-[var(--bg-surface)] border border-[var(--accent-aqua-border)] rounded-lg text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-aqua)]"
                     aria-label="Kode wilayah ADM4"
                   />
                   <button
                     type="button"
                     onClick={() => void fetchBmkgForecast()}
                     disabled={bmkgForecastLoading}
-                    className="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-[#FCDC2A] hover:bg-[#F7F6BB] disabled:opacity-50 text-[#114232] transition-colors cursor-pointer"
+                    className="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-[var(--accent-emerald)] hover:bg-[var(--accent-emerald-bright)] disabled:opacity-50 text-[#050d0f] transition-colors cursor-pointer"
                   >
                     {bmkgForecastLoading ? "Memuat…" : "Cek"}
                   </button>
                 </div>
                 {bmkgForecastError && (
-                  <p className="text-[10px] text-amber-300">
+                  <p className="text-[10px] text-amber-400">
                     {bmkgForecastError}
                   </p>
                 )}
                 {bmkgForecast?.lokasi && (
-                  <div className="mt-2 p-2.5 rounded-lg bg-[#87A922]/15 border border-[#87A922]/55 text-[10px] text-[#F7F6BB] space-y-1">
-                    <div className="font-semibold text-[#FCDC2A]">
+                  <div className="mt-2 p-2.5 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--accent-aqua-border)] text-[10px] text-[var(--text-primary)] space-y-1">
+                    <div className="font-semibold text-[var(--accent-aqua)]">
                       {bmkgForecast.lokasi.desa ||
                         bmkgForecast.lokasi.kecamatan}
                     </div>
-                    <div className="text-[#F7F6BB]/75">
+                    <div className="text-[var(--text-secondary)]">
                       {[
                         bmkgForecast.lokasi.kecamatan,
                         bmkgForecast.lokasi.kotkab,
@@ -714,12 +723,12 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                         .map((row: any, index: number) => (
                           <div
                             key={`${row.datetime || row.local_datetime || "forecast"}-${index}`}
-                            className="flex items-center justify-between gap-2 border-t border-[#87A922]/35 pt-1"
+                            className="flex items-center justify-between gap-2 border-t border-[var(--accent-aqua-border)] pt-1"
                           >
-                            <span className="text-[#F7F6BB]/75 font-mono">
+                            <span className="text-[var(--text-secondary)] font-mono">
                               {row.local_datetime || row.datetime || "—"}
                             </span>
-                            <span className="text-right text-[#F7F6BB]">
+                            <span className="text-right text-[var(--text-primary)]">
                               {row.weather_desc || "Cuaca"} · {row.t ?? "—"}°C ·{" "}
                               {row.hu ?? "—"}%
                             </span>
@@ -734,10 +743,15 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="px-4 py-2.5 border-t border-[#87A922]/50 bg-[#114232]/90 flex items-center justify-between text-[11px] text-[#F7F6BB]/80">
+        <div className="px-4 py-2.5 border-t border-[var(--accent-aqua-border)] bg-[var(--bg-surface)] flex items-center justify-between text-[11px] text-[var(--text-secondary)]">
           <button
-            onClick={onZoomToExtent}
-            className="text-[#FCDC2A] hover:underline font-medium flex items-center gap-1 cursor-pointer"
+            onClick={() => {
+              onZoomToExtent();
+              if (typeof window !== "undefined" && window.innerWidth < 1024) {
+                onClose();
+              }
+            }}
+            className="text-[var(--accent-aqua)] hover:underline font-medium flex items-center gap-1 cursor-pointer"
           >
             Pusatkan ke Indonesia
           </button>
@@ -747,73 +761,73 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
 
       {/* Layer Metadata Modal */}
       {selectedMetadata && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#114232]/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-[#114232] border border-[#87A922]/75 rounded-2xl shadow-2xl p-5 text-[#F7F6BB]">
-            <div className="flex items-center justify-between pb-3 border-b border-[#87A922]/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--glass-overlay)] backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg bg-[var(--bg-surface)] border border-[var(--accent-aqua-border)] rounded-2xl shadow-2xl p-5 text-[var(--text-primary)] max-h-[90dvh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--accent-aqua-border)]">
               <div>
-                <h3 className="text-sm font-bold text-[#F7F6BB]">
+                <h3 className="text-sm font-bold text-[var(--text-primary)]">
                   {selectedMetadata.name}
                 </h3>
-                <p className="text-[11px] text-[#F7F6BB]/75">
+                <p className="text-[11px] text-[var(--text-secondary)]">
                   Spesifikasi Metadata & Lisensi Data
                 </p>
               </div>
               <button
                 onClick={() => setSelectedMetadata(null)}
-                className="text-[#F7F6BB]/75 hover:text-white p-1 rounded-lg hover:bg-[#87A922]/30"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-1 rounded-lg hover:bg-[var(--accent-aqua-soft)]"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
-              <p className="text-[#F7F6BB]/90 leading-relaxed">
+              <p className="text-[var(--text-secondary)] leading-relaxed">
                 {selectedMetadata.meta.description}
               </p>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="bg-[#87A922]/15 p-2.5 rounded-lg border border-[#87A922]/55">
-                  <div className="text-[10px] text-[#FCDC2A] font-semibold uppercase">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <div className="bg-[var(--bg-surface-elevated)] p-2.5 rounded-xl border border-[var(--accent-aqua-border)]">
+                  <div className="text-[10px] text-[var(--accent-aqua)] font-semibold uppercase">
                     Penyedia / Sumber
                   </div>
-                  <div className="font-medium text-[#F7F6BB] mt-0.5">
+                  <div className="font-medium text-[var(--text-primary)] mt-0.5">
                     {selectedMetadata.meta.provider}
                   </div>
                 </div>
 
-                <div className="bg-[#87A922]/15 p-2.5 rounded-lg border border-[#87A922]/55">
-                  <div className="text-[10px] text-[#FCDC2A] font-semibold uppercase">
+                <div className="bg-[var(--bg-surface-elevated)] p-2.5 rounded-xl border border-[var(--accent-aqua-border)]">
+                  <div className="text-[10px] text-[var(--accent-aqua)] font-semibold uppercase">
                     Interval Pembaruan
                   </div>
-                  <div className="font-medium text-[#F7F6BB] mt-0.5">
+                  <div className="font-medium text-[var(--text-primary)] mt-0.5">
                     {selectedMetadata.meta.updateCadence}
                   </div>
                 </div>
                 {selectedMetadata.meta.attribution && (
-                  <div className="col-span-2 bg-[#87A922]/20 p-2.5 rounded-lg border border-[#FCDC2A]/60">
-                    <div className="text-[10px] text-[#FCDC2A] font-semibold uppercase">
+                  <div className="sm:col-span-2 bg-[var(--accent-emerald-soft)] p-2.5 rounded-xl border border-[var(--accent-emerald-border)]">
+                    <div className="text-[10px] text-[var(--accent-emerald-bright)] font-semibold uppercase">
                       Atribusi / Kredit Sumber
                     </div>
-                    <div className="font-medium text-[#F7F6BB] mt-0.5 leading-relaxed">
+                    <div className="font-medium text-[var(--text-primary)] mt-0.5 leading-relaxed">
                       {selectedMetadata.meta.attribution}
                     </div>
                   </div>
                 )}
 
-                <div className="bg-[#87A922]/15 p-2.5 rounded-lg border border-[#87A922]/55">
-                  <div className="text-[10px] text-[#FCDC2A] font-semibold uppercase">
+                <div className="bg-[var(--bg-surface-elevated)] p-2.5 rounded-xl border border-[var(--accent-aqua-border)]">
+                  <div className="text-[10px] text-[var(--accent-aqua)] font-semibold uppercase">
                     Resolusi Spasial
                   </div>
-                  <div className="font-medium text-[#F7F6BB] mt-0.5">
+                  <div className="font-medium text-[var(--text-primary)] mt-0.5">
                     {selectedMetadata.meta.spatialResolution}
                   </div>
                 </div>
 
-                <div className="bg-[#87A922]/15 p-2.5 rounded-lg border border-[#87A922]/55">
-                  <div className="text-[10px] text-[#FCDC2A] font-semibold uppercase">
+                <div className="bg-[var(--bg-surface-elevated)] p-2.5 rounded-xl border border-[var(--accent-aqua-border)]">
+                  <div className="text-[10px] text-[var(--accent-aqua)] font-semibold uppercase">
                     Lisensi Penggunaan
                   </div>
-                  <div className="font-medium text-[#F7F6BB] mt-0.5">
+                  <div className="font-medium text-[var(--text-primary)] mt-0.5">
                     {selectedMetadata.meta.license}
                   </div>
                 </div>
@@ -825,7 +839,7 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
                     href={selectedMetadata.meta.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-[#FCDC2A] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs text-[var(--accent-aqua)] hover:underline"
                   >
                     <span>Kunjungi Portal Sumber</span>
                     <ExternalLink className="w-3 h-3" />
@@ -834,10 +848,10 @@ export const SidebarLayers: React.FC<SidebarLayersProps> = ({
               )}
             </div>
 
-            <div className="mt-5 pt-3 border-t border-[#87A922]/50 flex justify-end">
+            <div className="mt-5 pt-3 border-t border-[var(--accent-aqua-border)] flex justify-end">
               <button
                 onClick={() => setSelectedMetadata(null)}
-                className="px-4 py-1.5 text-xs font-bold bg-[#FCDC2A] hover:bg-[#F7F6BB] rounded-lg text-[#114232] transition-colors cursor-pointer"
+                className="px-4 py-1.5 text-xs font-bold bg-[var(--accent-aqua)] hover:bg-[var(--accent-aqua-strong)] rounded-xl text-[#050d0f] transition-colors cursor-pointer"
               >
                 Tutup
               </button>

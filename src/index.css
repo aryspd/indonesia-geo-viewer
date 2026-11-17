@@ -3,67 +3,141 @@
 @import "maplibre-gl/dist/maplibre-gl.css";
 
 :root {
-  --color-forest-950: #114232;
-  --color-olive-600: #87A922;
-  --color-gold-400: #FCDC2A;
-  --color-cream-100: #F7F6BB;
+  --bg-obsidian: #eef6f6;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f3fafa;
+  --bg-surface-hover: #e2f2f1;
+  --accent-aqua: #0d9488;
+  --accent-aqua-strong: #0f766e;
+  --accent-aqua-soft: rgba(13, 148, 136, 0.1);
+  --accent-aqua-border: rgba(13, 148, 136, 0.24);
+  --accent-emerald: #059669;
+  --accent-emerald-bright: #047857;
+  --accent-emerald-soft: rgba(5, 150, 105, 0.12);
+  --accent-emerald-border: rgba(5, 150, 105, 0.34);
+  --text-primary: #050d0f;
+  --text-secondary: #2c4e52;
+  --text-muted: #5d8084;
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-overlay: rgba(5, 13, 15, 0.55);
+}
+
+.dark {
+  --bg-obsidian: #050d0f;
+  --bg-surface: #081518;
+  --bg-surface-elevated: #0d2026;
+  --bg-surface-hover: #132c33;
+  --accent-aqua: #7de3e0;
+  --accent-aqua-strong: #a5f3fc;
+  --accent-aqua-soft: rgba(125, 227, 224, 0.12);
+  --accent-aqua-border: rgba(125, 227, 224, 0.22);
+  --accent-emerald: #10b981;
+  --accent-emerald-bright: #34d399;
+  --accent-emerald-soft: rgba(16, 185, 129, 0.16);
+  --accent-emerald-border: rgba(16, 185, 129, 0.38);
+  --text-primary: #e6f7f6;
+  --text-secondary: #9ac4c2;
+  --text-muted: #638e8d;
+  --glass-bg: rgba(5, 13, 15, 0.9);
+  --glass-overlay: rgba(5, 13, 15, 0.78);
 }
 
 @layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #114232;
+    background-color: var(--bg-obsidian);
+    color: var(--text-primary);
+    -webkit-tap-highlight-color: transparent;
   }
-  
-  .font-mono, .tabular-nums {
+
+  .font-mono,
+  .tabular-nums {
     font-family: 'JetBrains Mono', monospace;
   }
 }
 
-/* Custom smooth Forest-Gold GIS scrollbar */
+/* Custom smooth Obsidian Teal + Luminous Aqua GIS scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(17, 66, 50, 0.4);
+  background: rgba(5, 13, 15, 0.35);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(135, 169, 34, 0.65);
+  background: rgba(125, 227, 224, 0.35);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(252, 220, 42, 0.85);
+  background: rgba(16, 185, 129, 0.75);
 }
 
 /* MapLibre custom control styles */
 .maplibregl-ctrl-group {
-  border-radius: 10px !important;
-  border: 1px solid rgba(135, 169, 34, 0.55) !important;
-  background-color: rgba(17, 66, 50, 0.92) !important;
-  backdrop-filter: blur(10px) !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(125, 227, 224, 0.24) !important;
+  background-color: rgba(5, 13, 15, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+  overflow: hidden;
 }
 
-.dark .maplibregl-ctrl-group button {
-  border-color: rgba(135, 169, 34, 0.45) !important;
+.maplibregl-ctrl-group button {
+  width: 34px !important;
+  height: 34px !important;
+  border-color: rgba(125, 227, 224, 0.16) !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background-color: rgba(125, 227, 224, 0.15) !important;
 }
 
 .maplibregl-ctrl-group button span {
-  filter: invert(0.85);
+  filter: invert(0.9) hue-rotate(150deg) saturate(1.4);
+}
+
+.maplibregl-ctrl-scale {
+  background-color: rgba(5, 13, 15, 0.82) !important;
+  border-color: rgba(125, 227, 224, 0.45) !important;
+  color: #7de3e0 !important;
+  border-radius: 6px !important;
+  padding: 1px 6px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+  backdrop-filter: blur(8px) !important;
 }
 
 .maplibregl-popup-content {
   padding: 0 !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   overflow: hidden !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
   background: transparent !important;
 }
 
 .maplibregl-popup-tip {
   display: none !important;
+}
+
+@media (max-width: 639px) {
+  .maplibregl-ctrl-top-right {
+    top: 6px !important;
+    right: 6px !important;
+  }
+  .maplibregl-ctrl-bottom-left {
+    bottom: 6px !important;
+    left: 6px !important;
+  }
 }

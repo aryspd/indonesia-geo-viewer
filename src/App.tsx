@@ -35,10 +35,14 @@ export default function App() {
   // 3. Layer Catalog State
   const [layers, setLayers] = useState<LayerDefinition[]>(() => INITIAL_LAYERS.map((layer) => ({ ...layer })));
 
-  // 4. Sidebar & Panel State
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  // 4. Sidebar & Panel State (responsive defaults for HP, Tab, iPad, Desktop)
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
+  );
   const [selectedFeature, setSelectedFeature] = useState<SelectedFeature | null>(null);
-  const [infoPanelOpen, setInfoPanelOpen] = useState<boolean>(true);
+  const [infoPanelOpen, setInfoPanelOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1280 : false
+  );
 
   // 5. Measurement Mode
   const [measureMode, setMeasureMode] = useState<MeasureMode>('none');
@@ -108,10 +112,33 @@ export default function App() {
     setFlyToCoords([118.0149, -2.5489]);
   }, []);
 
-  // When a feature is selected on map, open info panel
+  // When a feature is selected on map, open info panel (and close sidebar on <1024px)
   const handleSelectFeature = useCallback((feature: SelectedFeature) => {
     setSelectedFeature(feature);
     setInfoPanelOpen(true);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  }, []);
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarOpen((prev) => {
+      const next = !prev;
+      if (next && typeof window !== 'undefined' && window.innerWidth < 1024) {
+        setInfoPanelOpen(false);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleToggleInfoPanel = useCallback(() => {
+    setInfoPanelOpen((prev) => {
+      const next = !prev;
+      if (next && typeof window !== 'undefined' && window.innerWidth < 1024) {
+        setSidebarOpen(false);
+      }
+      return next;
+    });
   }, []);
 
   const handleQuakesLoaded = useCallback((count: number, latestMag: number | null) => {
@@ -139,7 +166,7 @@ export default function App() {
   );
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#114232] text-[#F7F6BB] flex flex-col font-sans select-none">
+    <div className="relative w-full h-dvh overflow-hidden bg-[var(--bg-obsidian)] text-[var(--text-primary)] flex flex-col font-sans select-none">
       {/* 1. Header Navigation Bar */}
       <Header
         currentBasemap={currentBasemap}
@@ -150,10 +177,10 @@ export default function App() {
         isDark={isDark}
         onToggleTheme={toggleTheme}
         onOpenSettings={() => setSettingsOpen(true)}
-        onOpenSidebar={() => setSidebarOpen((prev) => !prev)}
+        onOpenSidebar={handleToggleSidebar}
         sidebarOpen={sidebarOpen}
         infoPanelOpen={infoPanelOpen}
-        onToggleInfoPanel={() => setInfoPanelOpen((prev) => !prev)}
+        onToggleInfoPanel={handleToggleInfoPanel}
         activeLayersCount={activeLayersCount}
         onOpenVectorData={() => setVectorDataOpen(true)}
       />

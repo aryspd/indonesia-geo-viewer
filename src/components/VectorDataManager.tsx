@@ -110,36 +110,36 @@ export const VectorDataManager: React.FC<Props> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-start justify-center bg-[#114232]/80 backdrop-blur-sm p-3 pt-16 sm:p-6 sm:pt-20"
+      className="fixed inset-0 z-[70] flex items-start justify-center bg-[var(--glass-overlay)] backdrop-blur-sm p-2.5 pt-16 sm:p-6 sm:pt-20"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <section className="w-full max-w-2xl max-h-[calc(100vh-6rem)] overflow-hidden rounded-2xl border border-[#87A922]/75 bg-[#114232] text-[#F7F6BB] shadow-2xl">
-        <header className="flex items-center justify-between gap-3 border-b border-[#87A922]/50 bg-[#87A922]/20 px-4 py-3 sm:px-5">
+      <section className="w-full max-w-2xl max-h-[calc(100dvh-5rem)] overflow-hidden rounded-2xl border border-[var(--accent-aqua-border)] bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-2xl">
+        <header className="flex items-center justify-between gap-3 border-b border-[var(--accent-aqua-border)] bg-gradient-to-r from-[var(--accent-aqua-soft)] to-[var(--bg-surface)] px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#FCDC2A]/20 text-[#FCDC2A] border border-[#FCDC2A]/60">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--accent-emerald-soft)] text-[var(--accent-emerald-bright)] border border-[var(--accent-emerald-border)]">
               <Layers3 className="h-4 w-4" />
             </span>
             <div>
-              <h2 className="text-sm font-semibold text-[#F7F6BB]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 Data Vektor & Batas Wilayah
               </h2>
-              <p className="text-[11px] text-[#F7F6BB]/75">
+              <p className="text-[11px] text-[var(--text-secondary)]">
                 GeoJSON dan Shapefile ZIP · tampilan peta yang rapi
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-[#F7F6BB]/75 hover:bg-[#87A922]/35 hover:text-white"
+            className="rounded-lg p-2 text-[var(--text-secondary)] hover:bg-[var(--accent-aqua-soft)] hover:text-[var(--text-primary)] cursor-pointer"
             aria-label="Tutup panel"
           >
             <X className="h-4 w-4" />
           </button>
         </header>
 
-        <div className="max-h-[calc(100vh-10rem)] space-y-4 overflow-y-auto p-4 sm:p-5">
+        <div className="max-h-[calc(100dvh-10rem)] space-y-4 overflow-y-auto p-4 sm:p-5">
           <button
             type="button"
             disabled={busy}
@@ -154,20 +154,20 @@ export const VectorDataManager: React.FC<Props> = ({
               setDragging(false);
               void handleFiles(event.dataTransfer.files);
             }}
-            className={`flex w-full flex-col items-center justify-center rounded-xl border border-dashed px-5 py-7 text-center transition cursor-pointer ${dragging ? "border-[#FCDC2A] bg-[#FCDC2A]/15" : "border-[#87A922]/70 bg-[#87A922]/15 hover:border-[#FCDC2A] hover:bg-[#87A922]/25"}`}
+            className={`flex w-full flex-col items-center justify-center rounded-xl border border-dashed px-5 py-7 text-center transition cursor-pointer ${dragging ? "border-[var(--accent-aqua)] bg-[var(--accent-aqua-soft)]" : "border-[var(--accent-aqua-border)] bg-[var(--bg-surface-elevated)] hover:border-[var(--accent-aqua)] hover:bg-[var(--bg-surface-hover)]"}`}
           >
             {busy ? (
-              <Loader2 className="mb-2 h-7 w-7 animate-spin text-[#FCDC2A]" />
+              <Loader2 className="mb-2 h-7 w-7 animate-spin text-[var(--accent-aqua)]" />
             ) : (
-              <FileUp className="mb-2 h-7 w-7 text-[#FCDC2A]" />
+              <FileUp className="mb-2 h-7 w-7 text-[var(--accent-aqua)]" />
             )}
-            <span className="text-sm font-medium text-[#F7F6BB]">
+            <span className="text-sm font-medium text-[var(--text-primary)]">
               {busy ? "Memproses geometri…" : "Pilih atau tarik file ke sini"}
             </span>
-            <span className="mt-1 text-[11px] text-[#F7F6BB]/75">
+            <span className="mt-1 text-[11px] text-[var(--text-secondary)]">
               .geojson / .json / .zip Shapefile · maksimum 75 MB per file
             </span>
-            <span className="mt-2 text-[10px] text-[#F7F6BB]/60">
+            <span className="mt-2 text-[10px] text-[var(--text-muted)]">
               Shapefile bisa berupa ZIP berisi komponen pendukung, atau pilih
               .shp dan .prj sekaligus (.dbf/.shx dianjurkan).
             </span>
@@ -184,24 +184,24 @@ export const VectorDataManager: React.FC<Props> = ({
           />
 
           {error && (
-            <div className="flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">
+            <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
           {notice && (
-            <div className="flex items-start gap-2 rounded-lg border border-[#FCDC2A]/40 bg-[#FCDC2A]/15 p-3 text-xs text-[#F7F6BB]">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#FCDC2A]" />
+            <div className="flex items-start gap-2 rounded-xl border border-[var(--accent-emerald-border)] bg-[var(--accent-emerald-soft)] p-3 text-xs text-[var(--text-primary)]">
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent-emerald-bright)]" />
               <span>{notice}</span>
             </div>
           )}
 
-          <div className="rounded-xl border border-[#87A922]/55 bg-[#87A922]/15 p-3">
-            <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-[#F7F6BB]">
-              <Info className="h-3.5 w-3.5 text-[#FCDC2A]" /> Standar agar
+          <div className="rounded-xl border border-[var(--accent-aqua-border)] bg-[var(--bg-surface-elevated)] p-3">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-[var(--text-primary)]">
+              <Info className="h-3.5 w-3.5 text-[var(--accent-aqua)]" /> Standar agar
               geometri tepat
             </div>
-            <ul className="space-y-1.5 text-[11px] leading-relaxed text-[#F7F6BB]/80">
+            <ul className="space-y-1.5 text-[11px] leading-relaxed text-[var(--text-secondary)]">
               <li>
                 • GeoJSON harus memakai koordinat longitude/latitude WGS84
                 (EPSG:4326).
@@ -228,15 +228,15 @@ export const VectorDataManager: React.FC<Props> = ({
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-[#F7F6BB]">
+              <h3 className="text-xs font-semibold text-[var(--text-primary)]">
                 Layer yang dimuat
               </h3>
-              <span className="rounded-full bg-[#87A922]/25 border border-[#87A922]/60 px-2 py-0.5 text-[10px] text-[#FCDC2A]">
+              <span className="rounded-full bg-[var(--accent-aqua-soft)] border border-[var(--accent-aqua-border)] px-2 py-0.5 text-[10px] text-[var(--accent-aqua)]">
                 {layers.length} layer
               </span>
             </div>
             {layers.length === 0 ? (
-              <div className="rounded-xl border border-[#87A922]/45 bg-[#87A922]/10 px-3 py-5 text-center text-xs text-[#F7F6BB]/70">
+              <div className="rounded-xl border border-[var(--accent-aqua-border)] bg-[var(--bg-surface-elevated)]/60 px-3 py-5 text-center text-xs text-[var(--text-muted)]">
                 Belum ada file vektor yang dimuat.
               </div>
             ) : (
@@ -244,7 +244,7 @@ export const VectorDataManager: React.FC<Props> = ({
                 {layers.map((layer) => (
                   <article
                     key={layer.id}
-                    className="rounded-xl border border-[#87A922]/60 bg-[#87A922]/15 p-3"
+                    className="rounded-xl border border-[var(--accent-aqua-border)] bg-[var(--bg-surface-elevated)] p-3"
                   >
                     <div className="flex items-start gap-3">
                       <span
@@ -253,24 +253,24 @@ export const VectorDataManager: React.FC<Props> = ({
                       />
                       <div className="min-w-0 flex-1">
                         <div
-                          className="truncate text-xs font-semibold text-[#F7F6BB]"
+                          className="truncate text-xs font-semibold text-[var(--text-primary)]"
                           title={layer.name}
                         >
                           {layer.name}
                         </div>
-                        <div className="mt-0.5 text-[10px] text-[#F7F6BB]/70">
+                        <div className="mt-0.5 text-[10px] text-[var(--text-secondary)]">
                           {layer.sourceFormat} ·{" "}
                           {formatNumber(layer.featureCount)} fitur ·{" "}
                           {layer.geometryTypes.join(", ")}
                         </div>
                         <div className="mt-2 flex flex-wrap gap-1.5 text-[10px]">
-                          <span className="rounded bg-[#114232]/85 px-1.5 py-0.5 text-[#FCDC2A]">
+                          <span className="rounded bg-[var(--bg-obsidian)] px-1.5 py-0.5 text-[var(--accent-aqua)]">
                             Titik {formatNumber(layer.pointCount)}
                           </span>
-                          <span className="rounded bg-[#114232]/85 px-1.5 py-0.5 text-[#87A922]">
+                          <span className="rounded bg-[var(--bg-obsidian)] px-1.5 py-0.5 text-[var(--accent-emerald-bright)]">
                             Garis {formatNumber(layer.lineCount)}
                           </span>
-                          <span className="rounded bg-[#114232]/85 px-1.5 py-0.5 text-[#F7F6BB]">
+                          <span className="rounded bg-[var(--bg-obsidian)] px-1.5 py-0.5 text-[var(--text-primary)]">
                             Polygon {formatNumber(layer.polygonCount)}
                           </span>
                           {layer.duplicateFeaturesRemoved > 0 && (
@@ -284,7 +284,7 @@ export const VectorDataManager: React.FC<Props> = ({
                             </span>
                           )}
                           {layer.polygonRingsClosed > 0 && (
-                            <span className="rounded bg-[#FCDC2A]/20 px-1.5 py-0.5 text-[#FCDC2A]">
+                            <span className="rounded bg-[var(--accent-aqua-soft)] px-1.5 py-0.5 text-[var(--accent-aqua)]">
                               Ring ditutup {layer.polygonRingsClosed}
                             </span>
                           )}
@@ -295,7 +295,7 @@ export const VectorDataManager: React.FC<Props> = ({
                           onClick={() =>
                             onUpdate(layer.id, { visible: !layer.visible })
                           }
-                          className="rounded-lg p-1.5 text-[#F7F6BB]/75 hover:bg-[#87A922]/35 hover:text-white"
+                          className="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--accent-aqua-soft)] hover:text-[var(--text-primary)]"
                           title={
                             layer.visible
                               ? "Sembunyikan layer"
@@ -310,7 +310,7 @@ export const VectorDataManager: React.FC<Props> = ({
                         </button>
                         <button
                           onClick={() => onRemove(layer.id)}
-                          className="rounded-lg p-1.5 text-[#F7F6BB]/75 hover:bg-rose-500/20 hover:text-rose-300"
+                          className="rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-rose-500/20 hover:text-rose-300"
                           title="Hapus layer dari peta"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -318,7 +318,7 @@ export const VectorDataManager: React.FC<Props> = ({
                       </div>
                     </div>
                     <div className="mt-3 flex items-center gap-3">
-                      <label className="flex items-center gap-1.5 text-[10px] text-[#F7F6BB]/80">
+                      <label className="flex items-center gap-1.5 text-[10px] text-[var(--text-secondary)]">
                         <input
                           type="checkbox"
                           checked={layer.showLabels}
@@ -327,11 +327,11 @@ export const VectorDataManager: React.FC<Props> = ({
                               showLabels: event.target.checked,
                             })
                           }
-                          className="rounded border-[#87A922] bg-[#114232] accent-[#FCDC2A]"
+                          className="rounded border-[var(--accent-aqua-border)] bg-[var(--bg-obsidian)] accent-[#10b981]"
                         />{" "}
                         Label
                       </label>
-                      <label className="flex min-w-0 flex-1 items-center gap-2 text-[10px] text-[#F7F6BB]/80">
+                      <label className="flex min-w-0 flex-1 items-center gap-2 text-[10px] text-[var(--text-secondary)]">
                         Opacity{" "}
                         <input
                           type="range"
@@ -344,15 +344,15 @@ export const VectorDataManager: React.FC<Props> = ({
                               opacity: Number(event.target.value),
                             })
                           }
-                          className="min-w-0 flex-1 accent-[#FCDC2A]"
+                          className="min-w-0 flex-1 accent-[#7de3e0]"
                         />
-                        <span className="w-8 text-right tabular-nums">
+                        <span className="w-8 text-right tabular-nums text-[var(--accent-aqua)]">
                           {Math.round(layer.opacity * 100)}%
                         </span>
                       </label>
                     </div>
                     <div
-                      className="mt-2 truncate font-mono text-[9px] text-[#F7F6BB]/55"
+                      className="mt-2 truncate font-mono text-[9px] text-[var(--text-muted)]"
                       title={layer.sourceFileName}
                     >
                       {layer.sourceFileName} · WGS84 ·{" "}

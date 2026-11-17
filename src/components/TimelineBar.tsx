@@ -53,37 +53,37 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
 
   if (isCollapsed) {
     return (
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+      <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20">
         <button
           onClick={() => setIsCollapsed(false)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#114232]/95 hover:bg-[#87A922]/30 text-[#F7F6BB] border border-[#87A922]/70 rounded-full shadow-lg backdrop-blur-md text-xs font-medium transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--glass-bg)] hover:bg-[var(--bg-surface-hover)] text-[var(--text-primary)] border border-[var(--accent-aqua-border)] rounded-full shadow-lg backdrop-blur-md text-xs font-medium transition-colors cursor-pointer"
         >
-          <Calendar className="w-3.5 h-3.5 text-[#FCDC2A]" />
-          <span>Timeline Temporal ({currentDate})</span>
+          <Calendar className="w-3.5 h-3.5 text-[var(--accent-aqua)]" />
+          <span>Timeline ({currentDate})</span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 w-[94%] max-w-xl bg-[#114232]/95 backdrop-blur-xl border border-[#87A922]/75 rounded-2xl px-4 py-2.5 text-[#F7F6BB] shadow-2xl flex items-center justify-between gap-3 text-xs">
+    <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-1rem)] sm:w-[94%] max-w-xl bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--accent-aqua-border)] rounded-2xl px-3 sm:px-4 py-2 sm:py-2.5 text-[var(--text-primary)] shadow-2xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-3 text-xs">
       {/* Play / Pause & Steps */}
       <div className="flex items-center gap-1">
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
             isPlaying
-              ? 'bg-[#FCDC2A] text-[#114232]'
-              : 'bg-[#87A922]/25 hover:bg-[#87A922]/45 border border-[#87A922]/50 text-[#F7F6BB]'
+              ? 'bg-[var(--accent-emerald)] text-[#050d0f]'
+              : 'bg-[var(--accent-aqua-soft)] hover:bg-[var(--bg-surface-hover)] border border-[var(--accent-aqua-border)] text-[var(--text-primary)]'
           }`}
           title={isPlaying ? 'Jeda Animasi Temporal' : 'Putar Animasi Harian'}
         >
-          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 text-[#FCDC2A]" />}
+          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 text-[var(--accent-aqua)]" />}
         </button>
 
         <button
           onClick={() => stepDay(-1)}
-          className="p-1.5 bg-[#87A922]/25 hover:bg-[#87A922]/45 border border-[#87A922]/50 text-[#F7F6BB] hover:text-white rounded-lg transition-colors"
+          className="p-1.5 bg-[var(--accent-aqua-soft)] hover:bg-[var(--bg-surface-hover)] border border-[var(--accent-aqua-border)] text-[var(--text-primary)] rounded-lg transition-colors cursor-pointer"
           title="Hari Sebelumnya"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -91,7 +91,7 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
 
         <button
           onClick={() => stepDay(1)}
-          className="p-1.5 bg-[#87A922]/25 hover:bg-[#87A922]/45 border border-[#87A922]/50 text-[#F7F6BB] hover:text-white rounded-lg transition-colors"
+          className="p-1.5 bg-[var(--accent-aqua-soft)] hover:bg-[var(--bg-surface-hover)] border border-[var(--accent-aqua-border)] text-[var(--text-primary)] rounded-lg transition-colors cursor-pointer"
           title="Hari Berikutnya"
         >
           <ChevronRight className="w-4 h-4" />
@@ -100,8 +100,8 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
 
       {/* Date Display and Input */}
       <div className="flex items-center gap-2 flex-1 justify-center">
-        <Calendar className="w-3.5 h-3.5 text-[#FCDC2A]" />
-        <span className="font-semibold text-[#F7F6BB] hidden sm:inline">Dimensi Waktu:</span>
+        <Calendar className="w-3.5 h-3.5 text-[var(--accent-aqua)] shrink-0" />
+        <span className="font-semibold text-[var(--text-primary)] hidden sm:inline">Dimensi Waktu:</span>
         <input
           type="date"
           value={currentDate}
@@ -109,11 +109,11 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
           onChange={(e) => {
             if (e.target.value) onChangeDate(e.target.value);
           }}
-          className="bg-[#114232] border border-[#87A922]/70 rounded-lg px-2 py-0.5 text-xs text-[#F7F6BB] font-mono focus:outline-none focus:border-[#FCDC2A]"
+          className="bg-[var(--bg-surface-elevated)] border border-[var(--accent-aqua-border)] rounded-lg px-2 py-0.5 text-xs text-[var(--text-primary)] font-mono focus:outline-none focus:border-[var(--accent-aqua)]"
         />
 
         {satelliteLayerActive && (
-          <span className="hidden md:inline px-1.5 py-0.5 text-[10px] bg-[#87A922]/25 text-[#FCDC2A] border border-[#FCDC2A]/60 rounded">
+          <span className="hidden md:inline px-1.5 py-0.5 text-[10px] bg-[var(--accent-emerald-soft)] text-[var(--accent-emerald-bright)] border border-[var(--accent-emerald-border)] rounded">
             Temporal Sinkron
           </span>
         )}
@@ -123,14 +123,14 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
       <div className="flex items-center gap-1.5">
         <button
           onClick={resetToToday}
-          className="p-1.5 text-[#F7F6BB]/80 hover:text-white hover:bg-[#87A922]/30 rounded-lg transition-colors"
+          className="p-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--accent-aqua-soft)] rounded-lg transition-colors cursor-pointer"
           title="Kembali ke Hari Ini"
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => setIsCollapsed(true)}
-          className="text-[11px] text-[#F7F6BB]/80 hover:text-white px-1.5 py-0.5 rounded-lg hover:bg-[#87A922]/30"
+          className="text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-1.5 py-0.5 rounded-lg hover:bg-[var(--accent-aqua-soft)] cursor-pointer"
           title="Sembunyikan Timeline"
         >
           Tutup
